@@ -1,7 +1,7 @@
 <?php
 
 class GameOfLife {
-    private $board;     // nasza tablica
+    public $board;     // nasza tablica
     private $boardSize; // rozmiar tablicy
 
     private function getNextStepForCell($row, $column){       // podanie namiarów komórki do sprawdzenia
@@ -74,7 +74,7 @@ class GameOfLife {
         }
     }
 
-    public function computeNextStep(){   // sprawdzenie całej tablicy poprzez stworzenie tablicy tymczasowej i po całym sprawdzeniu zaimplementowanie tablicy tymczasowej jako prawdziwą tablicę
+    public function computeNextStep(){   // sprawdzenie całej tablicy poprzez stworzenie tablicy tymczasowej i po całym sprawdzeniu zaimplementowanie tablicy tymczasowej jako prawdziwej tablicy
         $tempBoard = [];
         for($i = 0; $i < $this->boardSize; $i++){
             $tempBoard[$i] = [];
@@ -84,6 +84,22 @@ class GameOfLife {
         }
         $this->board = $tempBoard;
     }
+	
+	public function setFirstAliveCells($cell1, $cell2, $boardSize){
+			$this->setCell($cell1, $cell2, true);
+			if($cell1 <= $boardSize - 1){
+				$this->setCell($cell1 + 2, $cell2, true);
+				$this->setCell($cell1 + 1, $cell2, true);
+			} else {
+				$this->setCell($cell1 - 2, $cell2, true);
+			}
+			if($cell2 <= $boardSize - 1){
+				$this->setCell($cell1, $cell2 + 1, true);
+				$this->setCell($cell1, $cell2 - 2, true);
+			} else {
+				$this->setCell($cell1, $cell2 - 2, true);
+			}
+	}
 }
 /**
  * Created by PhpStorm.

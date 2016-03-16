@@ -1,68 +1,62 @@
+<?php
+require_once("./src/GameOfLife.php");
+session_start();
+
+if($_SERVER['REQUEST_METHOD'] == 'POST'){
+	if(isset($_POST['send'])){
+		if(isset($_POST['size']) && isset($_POST['cell1']) && isset($_POST['cell2'])){
+			$sizeOfBoard = intval($_POST['size']);
+			$cell1 = intval($_POST['cell1']) - 1;
+			$cell2 = intval($_POST['cell2']) - 1;
+			if($sizeOfBoard > 4 && 
+			    $cell1 >= 0 && $cell1 <= $sizeOfBoard && 
+			    $cell2 >= 0 && $cell2 <= $sizeOfBoard){
+				
+				$_SESSION['size'] = $sizeOfBoard;
+				$game = new GameOfLife($_SESSION['size']);
+				$_SESSION['game'] = $game;
+				$game->setFirstAliveCells($cell1, $cell2, $_SESSION['size']);
+			} else {
+				echo("Invalid data. Are you sure you enter positive numbers? Try one more time.");
+			}
+		}
+	} elseif(isset($_POST['clear'])){
+		header('refresh: 1;');
+		echo('Thank you for choosing our game. Hope you had fun!');
+		session_destroy();	
+	} elseif(isset($_POST['step'])) {
+		$_SESSION['game']->board = $_SESSION['newBoard'];
+		$_SESSION['game']->computeNextStep();
+	}
+}
+ ?>
+
 <!DOCTYPE html>
 <head>
     <link type="text/css" rel="stylesheet" href="./style/css.css">
     <meta charset="UTF-8">
 </head>
 <body>
-<form method="GET">
-    <p>Wybierz rozmiar tablicy</p>
-    <input type="text" name="size">
-    <p>Podaj liczby dwie liczby startowe</p>
-    <input type="text" name="nr1">
-    <input type="text" name="nr2">
-    <input type="submit" name="wyslij" value="Rozpocznij grę">
-    <input type="submit" name="dalej" value="Graj">
-</form>
-<br>
-<?php
-require_once("./src/GameOfLife.php");
-session_start();
-if($_SERVER['REQUEST_METHOD'] == 'GET'){
-    if(isset($_GET['wyslij'])){
-        if(isset($_GET['size']) && isset($_GET['nr1']) && isset($_GET['nr2'])){
-            $sizeOfBoard = intval($_GET['size']);
-            $nr1 = intval($_GET['nr1']);
-            $nr2 = intval($_GET['nr2']);
-            if($sizeOfBoard > 2 && $nr1 >= 0 && $nr2 >= 0){
-                $game = new GameOfLife($sizeOfBoard);
-                $game->setCell(($nr1-1),($nr2-1),true);
-                if($nr1 >= 0 && $nr1 <= $sizeOfBoard -1){
-                    $game->setCell($nr1,($nr2-1),true);
-                }
-                if($nr2 >= 0 && $nr2 <= $sizeOfBoard -1){
-                    $game->setCell(($nr1-1),$nr2,true);
-                }
-                $game->printBoard();
-                $_SESSION['size'] = $sizeOfBoard;
-                $_SESSION['nr1'] = $nr1-1;
-                $_SESSION['nr2'] = $nr2-1;
-            } else {
-                echo("Zle podane dane. Pamietaj aby wybrac dodatnie liczby calkowite");
-            }
-        }
-    }
-    $_SESSION['game'] = new GameOfLife($_SESSION['size']);
-    $_SESSION['game']->setCell($_SESSION['nr1'], $_SESSION['nr2'], true);
-    $_SESSION['game']->setCell($_SESSION['nr1']+1,($_SESSION['nr2']),true);
-    $_SESSION['game']->setCell($_SESSION['nr1'], $_SESSION['nr2']+1,true);
-    if(isset($_GET['dalej'])){
-        $_SESSION['game']->computeNextStep();
-        $_SESSION['game']->printBoard();
-    }
-
-
-}
-/*
-$game = new GameOfLife(5);
-$game->setCell(3,4,true);
-$game->setCell(2,4,true);
-$game->setCell(3,3,true);
-$game->printBoard();
-
-$game->computeNextStep();
-$game->printBoard();
-*/
-?>
+    <form method="POST">
+		<?php
+		if(isset($_SESSION['size'])){
+			echo('<br><input type="submit" name="step" value="Next step">
+			<input type="submit" name="clear" value="Stop Game">');
+			$_SESSION['game']->printBoard();
+			$_SESSION['newBoard'] = $_SESSION['game']->board;
+		} else {
+			echo('
+			<p>Choose size of the board (size of the board must be greater than 4)</p>
+			<input type="text" name="size">
+			<p>Choose coordinates for the first cell (remember to pick digits within the size of the board)</p>
+			<input type="text" name="cell1">
+			<input type="text" name="cell2">
+			<input type="submit" name="send" value="Start game">
+			');
+		}
+		?>
+    </form>
+    <br>
 
 </body>
 </html>
